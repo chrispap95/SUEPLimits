@@ -1,0 +1,3 @@
+<bin file="SUEP_autoMCStats_Run2.cpp" name="SUEP_autoMCStats_Run2"></bin>
+<bin file="SUEP_autoMCStats_Run3.cpp" name="SUEP_autoMCStats_Run3"></bin>
+<use name="CombineHarvester/CombineTools"/>
