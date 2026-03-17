@@ -1,11 +1,12 @@
 #!/bin/bash -e
-max_jobs=48  # Adjust as needed
+max_jobs=8  # Adjust as needed
+PYTHONNOUSERSITE=1
 
 # Step 1: Create datacards for Run 2 and Run 3 and combine them
-SUEP_autoMCStats_Run2 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_high_temp.txt SR_high_temp 2016 2017 2018
-SUEP_autoMCStats_Run2 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_low_temp.txt SR_low_temp 2016 2017 2018
-SUEP_autoMCStats_Run3 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_high_temp.txt SR_high_temp 2022 2022EE 2023 2023BPix
-SUEP_autoMCStats_Run3 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_low_temp.txt SR_low_temp 2022 2022EE 2023 2023BPix
+SUEP_hybridMCStats_Run2 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_high_temp.txt SR_high_temp 2016 2017 2018
+SUEP_hybridMCStats_Run2 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_low_temp.txt SR_low_temp 2016 2017 2018
+SUEP_hybridMCStats_Run3 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_high_temp.txt SR_high_temp 2022 2022EE 2023 2023BPix
+SUEP_hybridMCStats_Run3 auxiliaries/input/SUEP_signal_scale0.0001.root auxiliaries/input/models_for_low_temp.txt SR_low_temp 2022 2022EE 2023 2023BPix
 for model in auxiliaries/cards/SUEP_signal*Run2_13TeV.txt; do
     combineCards.py run2_13TeV=$model run3_13p6TeV=${model/Run2_13TeV/Run3_13p6TeV} > ${model/_Run2_13TeV/}
 done
@@ -27,8 +28,9 @@ done
 wait
 
 # Step 3: Iterate over workspace files
+job_count=0
 for file in auxiliaries/workspaces/SUEP_signal_scale0.0001_GluGluToSUEP_mS*nic.root; do
-    # (
+    (
         # Extract parameters from filename
         filename=$(basename "$file" .root)
         mS=$(echo "$filename" | grep -oP 'mS\K[\d\.]+')
@@ -41,13 +43,13 @@ for file in auxiliaries/workspaces/SUEP_signal_scale0.0001_GluGluToSUEP_mS*nic.r
         # Run the combine command
         combine "$file" -M AsymptoticLimits --mass "$mS" --cl 0.95 \
             --name "_scale0.0001_mPhi${mPhi}_T${T}_${mode}" \
-            --rAbsAcc 0.00001 --rRelAcc 0.01 --run blind -v 1
-    # ) &
-    # ((job_count++))
-    # if (( job_count >= max_jobs )); then
-    #     wait  # Wait when reaching the limit
-    #     job_count=0
-    # fi
+            --rAbsAcc 0.00001 --rRelAcc 0.01 --run blind
+    ) &
+    ((job_count++))
+    if (( job_count >= max_jobs )); then
+        wait  # Wait when reaching the limit
+        job_count=0
+    fi
 done
 wait
 

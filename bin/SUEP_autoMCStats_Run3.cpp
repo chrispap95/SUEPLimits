@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 
             // Bkg processes
             vector<string> bkg_procs = {
-                "QCD", "DY", "TT", "VV+VVV", "WJets", "Higgs"
+                "QCD", "DY", "TT", "ST", "VV+VVV", "WJets", "TTV", "Higgs"
             };
             cb.AddProcesses(
                 {"*"}, {"SUEP"}, {era}, {"muon"}, bkg_procs, cats, false
@@ -137,36 +137,44 @@ int main(int argc, char* argv[]) {
         }
 
         // Add scaling systematics
-        cb.cp().backgrounds().era({"13p6TeV_2022", "13p6TeV_2022EE"}).AddSyst(
+        cb.cp().backgrounds().era({"13p6TeV_2022", "13p6TeV_2022EE", "13p6TeV_2023", "13p6TeV_2023BPix"}).AddSyst(
             cb, 
-            "lumi_13p6TeV_2022", 
+            "lumi_1_13p6TeV", 
             "lnN", 
-            ch::syst::SystMap<>::init(1.014)
+            ch::syst::SystMap<ch::syst::era>::init
+                ({"13p6TeV_2022"}, 1.0138)
+                ({"13p6TeV_2022EE"}, 1.0138)
+                ({"13p6TeV_2023"}, 1.0017)
+                ({"13p6TeV_2023BPix"}, 1.0017)
         );
-        cb.cp().signals().era({"13p6TeV_2022", "13p6TeV_2022EE"}).AddSyst(
+        cb.cp().signals().era({"13p6TeV_2022", "13p6TeV_2022EE", "13p6TeV_2023", "13p6TeV_2023BPix"}).AddSyst(
             cb, 
-            "lumi_13p6TeV_2022", 
+            "lumi_1_13p6TeV", 
             "lnN", 
-            ch::syst::SystMap<>::init(1.014)
+            ch::syst::SystMap<ch::syst::era>::init
+                ({"13p6TeV_2022"}, 1.0138)
+                ({"13p6TeV_2022EE"}, 1.0138)
+                ({"13p6TeV_2023"}, 1.0017)
+                ({"13p6TeV_2023BPix"}, 1.0017)
         );
         cb.cp().backgrounds().era({"13p6TeV_2023", "13p6TeV_2023BPix"}).AddSyst(
             cb, 
-            "lumi_13p6TeV_2023", 
+            "lumi_2_13p6TeV", 
             "lnN", 
-            ch::syst::SystMap<>::init(1.013)
+            ch::syst::SystMap<>::init(1.0127)
         );
         cb.cp().signals().era({"13p6TeV_2023", "13p6TeV_2023BPix"}).AddSyst(
             cb, 
-            "lumi_13p6TeV_2023", 
+            "lumi_2_13p6TeV", 
             "lnN", 
-            ch::syst::SystMap<>::init(1.013)
+            ch::syst::SystMap<>::init(1.0127)
         );
 
         // Add shape systematics
         // Apply the common correlated systematics to all processes
         vector<string> common_shape_corr_systematics = {
             "PUReweight_13p6TeV",
-            // "LHEPdf",
+            "LHEPdf_13p6TeV",
             "LHEScaleMuF_13p6TeV",
             "LHEScaleMuR_13p6TeV"
         };
@@ -186,7 +194,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Apply the common uncorrelated systematics to all processes
-        vector<string> common_shape_uncorr_systematics = {"MuonSF"};
+        vector<string> common_shape_uncorr_systematics = {"TrigSF", "MuonSF"};
         for (auto syst : common_shape_uncorr_systematics) {
             cb.cp().backgrounds().AddSyst(
                 cb, 
@@ -245,7 +253,7 @@ int main(int argc, char* argv[]) {
         };
         for (auto syst : PS_shape_systematics) {
             cb.cp().backgrounds().process(
-                {"DY", "TT", "VV+VVV", "WJets", "Higgs"}
+                {"DY", "TT", "ST", "VV+VVV", "WJets", "TTV", "Higgs"}
             ).AddSyst(
                 cb, 
                 syst, 

@@ -137,18 +137,6 @@ int main(int argc, char* argv[]) {
         }
 
         // Add scaling systematics
-        cb.cp().backgrounds().era({"13TeV_2016APV"}).AddSyst(
-            cb, 
-            "lumi_13TeV_2016", 
-            "lnN", 
-            ch::syst::SystMap<>::init(1.01)
-        );
-        cb.cp().signals().era({"13TeV_2016APV"}).AddSyst(
-            cb, 
-            "lumi_13TeV_2016", 
-            "lnN", 
-            ch::syst::SystMap<>::init(1.01)
-        );
         cb.cp().backgrounds().AddSyst(
             cb, 
             "lumi_$ERA", 
@@ -206,7 +194,7 @@ int main(int argc, char* argv[]) {
         // Apply the common correlated systematics to all processes
         vector<string> common_shape_corr_systematics = {
             "PUReweight_13TeV",
-            // "LHEPdf",
+            "LHEPdf_13TeV",
             "LHEScaleMuF_13TeV",
             "LHEScaleMuR_13TeV"
         };
@@ -226,7 +214,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Apply the common uncorrelated systematics to all processes
-        vector<string> common_shape_uncorr_systematics = {"L1PreFire", "MuonSF"};
+        vector<string> common_shape_uncorr_systematics = {"TrigSF", "L1PreFire", "MuonSF"};
         for (auto syst : common_shape_uncorr_systematics) {
             cb.cp().backgrounds().AddSyst(
                 cb, 
