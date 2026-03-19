@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <tuple>
+#include "SystematicNaming.h"
 #include "CombineHarvester/CombineTools/interface/CombineHarvester.h"
 #include "CombineHarvester/CombineTools/interface/Observation.h"
 #include "CombineHarvester/CombineTools/interface/Process.h"
@@ -125,7 +126,21 @@ bool get_sr_lnN_ratios(
     }
 
     down_ratio = hist_down->GetBinContent(1) / nominal_yield;
+    if (!(down_ratio > 0.0)) {
+        cerr << "Warning: Invalid SR down ratio for process " << process
+             << " in bin " << bin_name << " for era " << era
+             << " and systematic " << systematic 
+             << ". Will use dummy value 0.1." << endl;
+        down_ratio = 0.1;
+    }
     up_ratio = hist_up->GetBinContent(1) / nominal_yield;
+    if (!(down_ratio > 0.0)) {
+        cerr << "Warning: Invalid SR up ratio for process " << process
+             << " in bin " << bin_name << " for era " << era
+             << " and systematic " << systematic 
+             << ". Will use dummy value 0.1." << endl;
+        up_ratio = 0.1;
+    }
     if (!(down_ratio > 0.0) || !(up_ratio > 0.0) ||
         !std::isfinite(down_ratio) || !std::isfinite(up_ratio)) {
         cerr << "Warning: Invalid SR ratios for process " << process
@@ -393,39 +408,47 @@ int main(int argc, char* argv[]) {
         }
 
         // Add scaling systematics
-        cb.cp().backgrounds().era({"13TeV_2016APV"}).AddSyst(
-            cb, 
-            "lumi_13TeV_2016", 
-            "lnN", 
-            ch::syst::SystMap<>::init(1.01)
-        );
-        cb.cp().signals().era({"13TeV_2016APV"}).AddSyst(
-            cb, 
-            "lumi_13TeV_2016", 
-            "lnN", 
-            ch::syst::SystMap<>::init(1.01)
-        );
         cb.cp().backgrounds().AddSyst(
             cb, 
-            "lumi_$ERA", 
+            "lumi_2016", 
             "lnN", 
-            ch::syst::SystMap<ch::syst::era>::init
-                ({"13TeV_2016"}, 1.01)
-                ({"13TeV_2017"}, 1.02)
-                ({"13TeV_2018"}, 1.015)
+            ch::syst::SystMap<ch::syst::era>::init({"13TeV_2016"}, 1.01)
         );
         cb.cp().signals().AddSyst(
             cb, 
-            "lumi_$ERA", 
+            "lumi_2016", 
             "lnN", 
-            ch::syst::SystMap<ch::syst::era>::init
-                ({"13TeV_2016"}, 1.01)
-                ({"13TeV_2017"}, 1.02)
-                ({"13TeV_2018"}, 1.015)
+            ch::syst::SystMap<ch::syst::era>::init({"13TeV_2016"}, 1.01)
         );
         cb.cp().backgrounds().AddSyst(
             cb, 
-            "lumi_13TeV_201620172018", 
+            "lumi_2017", 
+            "lnN", 
+            ch::syst::SystMap<ch::syst::era>::init
+                ({"13TeV_2017"}, 1.02)
+        );
+        cb.cp().signals().AddSyst(
+            cb, 
+            "lumi_2017", 
+            "lnN", 
+            ch::syst::SystMap<ch::syst::era>::init
+                ({"13TeV_2017"}, 1.02)
+        );
+        cb.cp().backgrounds().AddSyst(
+            cb, 
+            "lumi_2018", 
+            "lnN", 
+            ch::syst::SystMap<ch::syst::era>::init({"13TeV_2018"}, 1.015)
+        );
+        cb.cp().signals().AddSyst(
+            cb, 
+            "lumi_2018", 
+            "lnN", 
+            ch::syst::SystMap<ch::syst::era>::init({"13TeV_2018"}, 1.015)
+        );
+        cb.cp().backgrounds().AddSyst(
+            cb, 
+            "lumi_13TeV_correlated", 
             "lnN", 
             ch::syst::SystMap<ch::syst::era>::init
                 ({"13TeV_2016"}, 1.006)
@@ -434,7 +457,7 @@ int main(int argc, char* argv[]) {
         );
         cb.cp().signals().AddSyst(
             cb, 
-            "lumi_13TeV_201620172018", 
+            "lumi_13TeV_correlated", 
             "lnN", 
             ch::syst::SystMap<ch::syst::era>::init
                 ({"13TeV_2016"}, 1.006)
@@ -443,7 +466,7 @@ int main(int argc, char* argv[]) {
         );
         cb.cp().backgrounds().AddSyst(
             cb, 
-            "lumi_13TeV_20172018", 
+            "lumi_13TeV_1718", 
             "lnN", 
             ch::syst::SystMap<ch::syst::era>::init
                 ({"13TeV_2017"}, 1.006)
@@ -451,7 +474,7 @@ int main(int argc, char* argv[]) {
         );
         cb.cp().signals().AddSyst(
             cb, 
-            "lumi_13TeV_20172018", 
+            "lumi_13TeV_1718", 
             "lnN", 
             ch::syst::SystMap<ch::syst::era>::init
                 ({"13TeV_2017"}, 1.006)
@@ -693,10 +716,10 @@ int main(int argc, char* argv[]) {
 
         // Add rateParam's 
         cb.cp().backgrounds().process({"QCD"}).AddSyst(
-            cb, "k_QCD_13TeV", "rateParam", ch::syst::SystMap<>::init(1.0)
+            cb, "rate_QCD_13TeV", "rateParam", ch::syst::SystMap<>::init(1.0)
         );
         cb.cp().backgrounds().process({"DY"}).AddSyst(
-            cb, "k_DY_13TeV", "rateParam", ch::syst::SystMap<>::init(1.0)
+            cb, "rate_DY_13TeV", "rateParam", ch::syst::SystMap<>::init(1.0)
         );
         
         for (size_t i = 0; i < years.size(); ++i) {
@@ -724,6 +747,8 @@ int main(int argc, char* argv[]) {
             // AutoMCStats for CRs
             cb.cp().bin({"CR_QCD_" + era, "CR_DY_" + era}).SetAutoMCStats(cb, 5);
         }
+
+        suep::apply_systematic_name_map(cb);
 
         // Output file name
         string output_name = filename + "_" + signal;

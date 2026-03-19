@@ -125,7 +125,21 @@ bool get_sr_lnN_ratios(
     }
 
     down_ratio = hist_down->GetBinContent(1) / nominal_yield;
+    if (!(down_ratio > 0.0)) {
+        cerr << "Warning: Invalid SR down ratio for process " << process
+             << " in bin " << bin_name << " for era " << era
+             << " and systematic " << systematic 
+             << ". Will use dummy value 0.1." << endl;
+        down_ratio = 0.1;
+    }
     up_ratio = hist_up->GetBinContent(1) / nominal_yield;
+    if (!(down_ratio > 0.0)) {
+        cerr << "Warning: Invalid SR up ratio for process " << process
+             << " in bin " << bin_name << " for era " << era
+             << " and systematic " << systematic 
+             << ". Will use dummy value 0.1." << endl;
+        up_ratio = 0.1;
+    }
     if (!(down_ratio > 0.0) || !(up_ratio > 0.0) ||
         !std::isfinite(down_ratio) || !std::isfinite(up_ratio)) {
         cerr << "Warning: Invalid SR ratios for process " << process
